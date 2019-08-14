@@ -183,16 +183,16 @@ int main(int argc, char **argv) {
     // display result
 
     p=(uint8_t *)&h0;
-    printf("%2.2x--%2.2x--%2.2x--%2.2x %#010x", p[0], p[1], p[2], p[3], h0);
+    printf("%2.2x--%2.2x--%2.2x--%2.2x--- %2.5x\n", p[0], p[1], p[2], p[3], h0);
 
     p=(uint8_t *)&h1;
-    printf("%2.2x%2.2x%2.2x%2.2x %2.5x", p[0], p[1], p[2], p[3], h1);
+    printf("%2.2x%2.2x%2.2x%2.2x %2.5x\n", p[0], p[1], p[2], p[3], h1);
 
     p=(uint8_t *)&h2;
-    printf("%2.2x%2.2x%2.2x%2.2x %2.5x", p[0], p[1], p[2], p[3], h2);
+    printf("%2.2x%2.2x%2.2x%2.2x %2.5x\n", p[0], p[1], p[2], p[3], h2);
 
     p=(uint8_t *)&h3;
-    printf("%2.2x%2.2x%2.2x%2.2x %2.5x", p[0], p[1], p[2], p[3], h3);
+    printf("%2.2x%2.2x%2.2x%2.2x %2.5x\n", p[0], p[1], p[2], p[3], h3);
     puts("");
 
     return 0;

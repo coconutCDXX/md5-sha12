@@ -92,7 +92,7 @@ Table tab[] =
 	{ 0x265e5a51, 11, S23},
 	{ 0xe9b6c7aa, 0, S24},
 	{ 0xd62f105d, 5, S21},
-	{  0x2441453, 10, S22},
+	{  0x02441453, 10, S22},
 	{ 0xd8a1e681, 15, S23},
 	{ 0xe7d3fbc8, 4, S24},
 	{ 0x21e1cde6, 9, S21},
@@ -156,26 +156,30 @@ void decode(uint*, byte*, uint);
 MD5state* md5(byte*, uint, byte*, MD5state*);
 void sum(FILE*, char*);
 
-void
-main(int argc, char **argv)
+void main(int argc, char **argv)
 {
 	int c;
 	FILE *fd;
 
 	argv++; argc--;
-	if(argc>0 && strcmp(argv[0],"-d")==0){
+	if(argc>0 && strcmp(argv[0],"-d")==0)
+	{
 		debug++;
 		argv++; argc--;
 	}
 
-	if(argc>0 && strcmp(argv[0],"-x")==0){
+	if(argc>0 && strcmp(argv[0],"-x")==0)
+	{
 		hex++;
 		argv++; argc--;
 	}
 
 	if(argc == 0)
+	{
 		sum(stdin,0);
-	else for(c = 0; c < argc; c++){
+	}
+	else for(c = 0; c < argc; c++)
+	{
 		fd = fopen(argv[c],"r");
 		if(fd==NULL){
 			fprintf(stderr, "md5sum: can't open %s\n", argv[c]);
@@ -186,8 +190,7 @@ main(int argc, char **argv)
 	}
 }
 
-void
-sum(FILE *fd, char *name)
+void sum(FILE *fd, char *name)
 {
 	byte *buf;
 	byte digest[16];
@@ -200,7 +203,8 @@ sum(FILE *fd, char *name)
 	buf = calloc(256,64);
 	for(;;){
 		i = fread(buf+n, 1, 128*64-n, fd);
-		// printf("my read %d\n", i);
+		printf("my read %d my adjusted read %d\n", i, n);
+		printf("%s input string\n ", buf);
 		if(i <= 0)
 			break;
 		n += i;
@@ -213,6 +217,8 @@ sum(FILE *fd, char *name)
 	if(hex){
 		for(i=0;i<16;i++) printf("%.2X", digest[i]);
 	}else{
+		printf("%s\n", pr64);
+		// system("echo pr64 | base64");
 		enc64(pr64,digest,sizeof(digest));
 		pr64[22] = '\0';  /* chop trailing == */
 		printf("%s",pr64);
@@ -227,8 +233,7 @@ sum(FILE *fd, char *name)
  *  I require len to be a multiple of 64 for all but
  *  the last call
  */
-MD5state*
-md5(byte *p, uint len, byte *digest, MD5state *s)
+MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 {
 	uint a, b, c, d, tmp;
 	uint i, done;
@@ -283,8 +288,8 @@ md5(byte *p, uint len, byte *digest, MD5state *s)
 		d = s->state[3];
 
 		decode(x, p, 64);
-
 		for(i = 0; i < 64; i++){
+			// printf("a before %x ----", a);
 			t = tab + i;
 			switch(i>>4){
 			case 0:
@@ -300,6 +305,7 @@ md5(byte *p, uint len, byte *digest, MD5state *s)
 				a += c ^ (b | ~d);
 				break;
 			}
+			// printf("word: %x + modconstant: %x + function: %x + rotation: %d\n", x[t->x], t->sin, a, t->rot);
 			a += x[t->x] + t->sin;
 			a = (a << t->rot) | (a >> (32 - t->rot));
 			a += b;
@@ -350,8 +356,7 @@ encode(byte *output, uint *input, uint len)
  *	decodes input (byte) into output (uint). Assumes len is
  *	a multiple of 4.
  */
-void
-decode(uint *output, byte *input, uint len)
+void decode(uint *output, byte *input, uint len)
 {
 	byte *e;
 
@@ -369,8 +374,7 @@ typedef unsigned char uchar;
 static uchar t64d[256];
 static char t64e[64];
 
-static void
-init64(void)
+static void init64(void)
 {
 	int c, i;
 
@@ -395,8 +399,7 @@ init64(void)
 	t64d['/'] = i;
 }
 
-int
-dec64(uchar *out, char *in, int n)
+int dec64(uchar *out, char *in, int n)
 {
 	ulong b24;
 	uchar *start = out;
@@ -444,8 +447,7 @@ dec64(uchar *out, char *in, int n)
 	return out - start;
 }
 
-int
-enc64(char *out, uchar *in, int n)
+int enc64(char *out, uchar *in, int n)
 {
 	int i;
 	ulong b24;
