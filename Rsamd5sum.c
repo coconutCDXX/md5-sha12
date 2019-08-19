@@ -202,8 +202,8 @@ void sum(FILE *fd, char *name)
 	n = 0;
 	buf = calloc(256,64);
 	for(;;){
-		i = fread(buf+n, 1, 128*64-n, fd);
-		printf("my read %d my adjusted read %d\n", i, n);
+		i = fread(buf+n, 1, 512-n, fd);
+		printf("***************************************************************************************my read %d my adjusted read %d\n", i, n);
 		printf("%s input string\n ", buf);
 		if(i <= 0)
 			break;
@@ -213,6 +213,7 @@ void sum(FILE *fd, char *name)
 		s = md5(buf, n, 0, s);
 		n = 0;
 	}
+	printf("last md5 go in %d\n", n);
 	md5(buf, n, digest, s);
 	if(hex){
 		for(i=0;i<16;i++) printf("%.2X", digest[i]);
@@ -288,10 +289,12 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 		d = s->state[3];
 
 		decode(x, p, 64);
+		printf("the binary in decimal is %d %d %d %d\n", x[0], x[1], x[2], x[3]);
 		for(i = 0; i < 64; i++){
 			// printf("a before %x ----", a);
 			t = tab + i;
-			switch(i>>4){
+			switch(i>>4)
+			{
 			case 0:
 				a += (b & c) | (~b & d);
 				break;
@@ -362,7 +365,7 @@ void decode(uint *output, byte *input, uint len)
 
 	for(e = input+len; input < e; input += 4)
 		*output++ = input[0] | (input[1] << 8) |
-			(input[2] << 16) | (input[3] << 24);
+		(input[2] << 16) | (input[3] << 24);
 }
 
 
