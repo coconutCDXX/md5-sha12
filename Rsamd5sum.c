@@ -143,7 +143,7 @@ Table tab[] =
 
 typedef struct MD5state
 {
-	uint len;
+	unsigned long int len;
 	uint state[4];
 }MD5state;
 MD5state *nil;
@@ -203,8 +203,8 @@ void sum(FILE *fd, char *name)
 	buf = calloc(256,64);
 	for(;;){
 		i = fread(buf+n, 1, 512-n, fd);
-		printf("***************************************************************************************my read %d my adjusted read %d\n", i, n);
-		printf("%s input string\n ", buf);
+		// printf("***************************************************************************************my read %d my adjusted read %d\n", i, n);
+		// printf("%s input string\n ", buf);
 		if(i <= 0)
 			break;
 		n += i;
@@ -213,7 +213,7 @@ void sum(FILE *fd, char *name)
 		s = md5(buf, n, 0, s);
 		n = 0;
 	}
-	printf("last md5 go in %d\n", n);
+	// printf("last md5 go in %d\n", n);
 	md5(buf, n, digest, s);
 	if(hex){
 		for(i=0;i<16;i++) printf("%.2X", digest[i]);
@@ -272,10 +272,11 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 			p[len] = 0x80;
 		}
 		len += i;
-
+		printf("length of message is %lu\n", s->len);
 		/* append the count */
 		x[0] = s->len<<3;
 		x[1] = s->len>>29;
+		printf("length of x[0] %u x[1] %u\n", x[0], x[1]);
 		encode(p+len, x, 8);
 	}
 	else
@@ -289,7 +290,7 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 		d = s->state[3];
 
 		decode(x, p, 64);
-		printf("the binary in decimal is %d %d %d %d\n", x[0], x[1], x[2], x[3]);
+		// printf("the binary in decimal is %d %d %d %d\n", x[0], x[1], x[2], x[3]);
 		for(i = 0; i < 64; i++){
 			// printf("a before %x ----", a);
 			t = tab + i;
@@ -346,7 +347,8 @@ encode(byte *output, uint *input, uint len)
 	uint x;
 	byte *e;
 
-	for(e = output + len; output < e;) {
+	for(e = output + len; output < e;)
+	 {
 		x = *input++;
 		*output++ = x;
 		*output++ = x >> 8;
