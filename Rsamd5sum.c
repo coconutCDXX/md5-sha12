@@ -200,10 +200,11 @@ void sum(FILE *fd, char *name)
 
 	s = nil;
 	n = 0;
-	buf = calloc(256,64);
+	// buf = calloc(256,64);
+	buf = (byte*)malloc(1024);
 	for(;;){
-		i = fread(buf+n, 1, 512-n, fd);
-		// printf("***************************************************************************************my read %d my adjusted read %d\n", i, n);
+		i = fread(buf+n, 1, 512/*-n*/, fd);
+		// printf("*********************************************my read %d my adjusted read %d\n", i, n);
 		// printf("%s input string\n ", buf);
 		if(i <= 0)
 			break;
@@ -255,12 +256,13 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 		s->state[3] = 0x10325476;
 	}
 	s->len += len;
+	// printf("len and op %u\n", len);
 
 	i = len & 0x3f;
 	if(i || len == 0)
 	{
 		done = 1;
-
+		printf("i before padding %u\n", i);
 		/* pad the input, assume there's room */
 		if(i < 56)
 			i = 56 - i;
@@ -272,7 +274,7 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 			p[len] = 0x80;
 		}
 		len += i;
-		printf("length of message is %lu\n", s->len);
+		printf("length of message is %lu and i %d\n where should length bits be place %u\n", s->len, i, len);
 		/* append the count */
 		x[0] = s->len<<3;
 		x[1] = s->len>>29;
@@ -282,6 +284,10 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 	else
 		done = 0;
 
+	if (done == 1)
+	{
+		printf("the last chunck\n %s\n limit\n", p);
+	}
 	for(end = p+len; p < end; p += 64)
 	{
 		a = s->state[0];
@@ -291,7 +297,8 @@ MD5state* md5(byte *p, uint len, byte *digest, MD5state *s)
 
 		decode(x, p, 64);
 		// printf("the binary in decimal is %d %d %d %d\n", x[0], x[1], x[2], x[3]);
-		for(i = 0; i < 64; i++){
+		for(i = 0; i < 64; i++)
+		{
 			// printf("a before %x ----", a);
 			t = tab + i;
 			switch(i>>4)

@@ -88,11 +88,21 @@ Table tab[] =
 
 typedef struct		MD5state
 {
-	unsigned int 	l;
 	unsigned int 	state[4]; 	/*the 128 bit digest that will have 64 operations done to get hash */
+	unsigned long	l;
+	unsigned int	a;
+	unsigned int	b;
+	unsigned int	c;
+	unsigned int	d;
+
 }					MD5state;
 
-void make_md5_digest(int fd, char *name);
+void 		get_words(int fd, char *name);
+MD5state* 	md5(unsigned char* buf, MD5state *s);
+MD5state* 	algo_operations(MD5state *s, int i, unsigned *x, Table *t);
+void 		decode(unsigned int *output, unsigned char *input, unsigned int len);
+void 		encode(unsigned char *output, unsigned int *input, unsigned int len);
+
 
 int main(int ac, char** av)
 {
@@ -107,7 +117,7 @@ int main(int ac, char** av)
 		while(av[i] != NULL)
 		{
 			fd = open(av[i], O_RDONLY);
-			make_md5_digest(fd, av[2]);
+			get_words(fd, av[2]);
 			i++;
 		}
 	}
@@ -122,24 +132,147 @@ int main(int ac, char** av)
 
 }
 
-void make_md5_digest(int fd, char *name)
+void get_words(int fd, char *name)
 {
-	char *buf;
-	int i;
-	buf = (char*)malloc(512);
+	unsigned char *buf;
+	unsigned int i;
+	MD5state *s;
+
+	s->l = 0;
+	s->state[0] = 0x67452301;
+	s->state[1] = 0xefcdab89;
+	s->state[2] = 0x98badcfe;
+	s->state[3] = 0x10325476;
+	buf = (unsigned char*)malloc(1024);
 	while (1)
 	{
-		bzero(buf, 512);
+		// printf("i read this: %s\n" ,buf);
+		bzero(buf, 1024);
 		if ((i = read(fd, buf, 512)) != 0)
-			printf("i read this: %s\n" ,buf);
-		else
-			break;
+			i = i;
+		// else
+		// {
+		// 	printf("total size is %lu\n", s->l);
+		// 	break;
+		// }
+		s->l += i;
 		if (i == 0 || (i & 63) != 0)
 		{
-			printf("my i %d\n", i);
-			
+			buf[i] = 0x80;
+			printf("i %u buf[i]=%#10x",i, buf[i]);
+			// add padding
+			// md5
+			break;
+		}
+		else
+		{
+			printf("my i was %u\n", i);
+			md5(buf, s);
 		}
 	}
+}
+MD5state* 	md5(unsigned char* buf, MD5state *s)
+{
+	int i;
+	unsigned int tmp;
+	unsigned int x[16];	//16 32-bit words
+
+	i = 0;
+	decode(x, buf, 64); //(buf to x) 8bit x 64 chars to 16bit x 32 ints
+	s->a = s->state[0];
+	s->b = s->state[1];
+	s->c = s->state[2];
+	s->d = s->state[3];
+	while (i < 64)
+	{
+		s = algo_operations(s, i++, x);
+		tmp = a;
+		s->a = d;
+		s->d = c;
+		s->c = b;
+		s->b = tmp;
+	}
+	s->state[0] += a;
+	s->state[1] += b;
+	s->state[2] += c;
+	s->state[3] += d;
+	return s;
+}
+
+MD5state* 	algo_operations(MD5state *s, int i, unsigned int *x)
+{
+	Table *t;
+
+	if (i>>4 == 0)//bitwise operations depending on i
+		s->a += (s->b & s->c) | (~(s->b) & s->d);
+	if (i>>4 == 1)
+		s->a += (s->b & s->d) | (s->c & ~(s->d));
+	if (i>>4 == 2)
+		s->a += s->b ^ s->c ^ s->d;
+	if (i>>4 == 3)
+		s->a += s->c ^ (s->b | ~(s->d));
+	t = tab + i;	//change table values each operation
+	s->a += x[t->word] + t->sin; //modular addition of the word and sin
+	s->a = (a << t->rot) | (a >> (32 - t->rot)); // circulatory rotation by table ammount
+	s->a += b; // modular addtion of a and b
+	return s;
+}
+
+void decode(unsigned int *output, unsigned char *input, unsigned int len)
+{
+	unsigned char *e;
+
+	for(e = input+len; input < e; input += 4)
+	*output++ = input[0] | (input[1] << 8) |
+	(input[2] << 16) | (input[3] << 24);
+}
+
+void encode(unsigned char *output, unsigned int *input, unsigned int len)
+{
+	unsigned int x;
+	unsigned char *e;
+
+	for(e = output + len; output < e;) {
+		x = *input++;
+		*output++ = x;
+		*output++ = x >> 8;
+		*output++ = x >> 16;
+		*output++ = x >> 24;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -170,4 +303,4 @@ void make_md5_digest(int fd, char *name)
 
 
 	// free(buf);
-}
+

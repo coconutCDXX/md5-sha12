@@ -32,15 +32,18 @@ int main(int ac, char** av)
 	// printf("the decoding is back to %s\n", digest);0
 	// free(buf);
 
-	unsigned int a[] = {205,3,111,60,205,3,111,60,205,3,111,60,205,3,111,60};
-	char x;
-	x = a[3];
-	printf("%c\n", x);
-	unsigned char test[16];
-	int i;
-	encode(test, a, 16);
-	for(i=0;i<16;i++) printf("%.2X", test[i]);
-
+	// unsigned int a[] = {205,3,111,60,205,3,111,60,205,3,111,60,205,3,111,60};
+	// char x;
+	// x = a[3];
+	// printf("%c\n", x);
+	// unsigned char test[16];
+	// int i;
+	// encode(test, a, 16);
+	// for(i=0;i<16;i++) printf("%.2X", test[i]);
+	unsigned char a = 0x80;
+	unsigned int b = 0;
+	b = a << 8;
+	printf("%d\n", b);
 
 }
 void decode(unsigned int *output, unsigned char *input, unsigned int len)
